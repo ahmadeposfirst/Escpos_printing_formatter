@@ -372,6 +372,7 @@ class PrintingService:
         self.initialized = True
 
 if __name__ == '__main__':
+    Logger().init()
     PrintingService().init()
 
     # Structure passed to print_sales_invoice

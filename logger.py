@@ -1,7 +1,4 @@
 from datetime import datetime
-from kivy.clock import Clock
-from functools import partial
-from backend.date import standard_datetime
 import os
 
 class Level:
@@ -21,30 +18,23 @@ class LogLevels(object):
 
 class Logger(LogLevels):
     min_log_level = None
-    target = None
     curr_level = None
 
     @classmethod
-    def init(cls, min_level='debug', target=None):
+    def init(cls, min_level='debug'):
         cls.min_log_level = cls.levels[min_level]
-        cls.target = target
         cls.curr_level = None
-
-    @classmethod
-    def set_target(cls, target):
-        cls.target = target
 
     @classmethod
     def log(cls, log_msg, log_level):
         cls.curr_level = cls.levels[log_level]
         if cls._is_level_allowed():
             cls._write_to_log(msg=log_msg)
-            cls._write_to_target(msg=log_msg)
 
     @classmethod
     def _write_to_log(cls, msg):
         # formats the log string
-        msg = f'[{standard_datetime()}] {cls.curr_level.type} {msg}'
+        msg = f'[{cls._date()}] {cls.curr_level.type} {msg}'
         
         # prints the log to console
         print(msg)
@@ -57,13 +47,7 @@ class Logger(LogLevels):
         with open(os.path.join('logs', 'app.log'), 'a') as fp:
             fp.write(f'{msg}\n')
 
-    @classmethod
-    def _write_to_target(cls, msg):
-        if cls.target is not None:
-            cls.target.text = msg
-            cls.target.color = cls.curr_level.color
-            Clock.schedule_once(partial(clear_msg, target), 5)
-
+ 
     @classmethod
     def _is_level_allowed(cls):
         if cls.curr_level.value >= cls.min_log_level.value:
@@ -71,5 +55,7 @@ class Logger(LogLevels):
         cls.curr_level = None
         return False
 
-    def clear_msg(target, obj):
-        target.text = ""
+    @classmethod
+    def _date(cls):
+        return datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
