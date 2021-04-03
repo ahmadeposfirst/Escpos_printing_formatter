@@ -8,7 +8,8 @@ class PrintingService:
 
     class RecieptPrinter(object):
         """This is a wrapper class around escpos.printer to implement some printer connections and passing commands"""
-        def __init__(self, **printer_args):
+        def __init__(self, **printer_args):\
+            self.__printer = None
             printers = {
                 'dummy':   self._connect_dummy,
                 'network': self._connect_network,
@@ -17,9 +18,9 @@ class PrintingService:
             }
             try:
                 self.__printer = printers[printer_args['type']](**printer_args)
-                Logger.log(f"{printer_args['type'].upper()} Printer connected: {e.__cause__}", "error")
+                Logger.debug(f"{printer_args['type'].upper()} Printer connected: {e.__cause__}")
             except Exception as e:
-                Logger.log(f"No {printer_args['type'].upper()} Printer found: {e.__cause__}", "error")
+                Logger.error(f"No {printer_args['type'].upper()} Printer found: {e.__cause__}")
 
         def is_connected(self):
             """returns True if printer is connected"""
@@ -224,7 +225,7 @@ class PrintingService:
                     footer=(invoice['servedby'], invoice['datetime'])
                 )
             else:
-                Logger.log(f"Printer not connected", "error")
+                Logger.error(f"Printer not connected")
 
 
         def _format_double_line(self, **line_def):
@@ -364,8 +365,6 @@ class PrintingService:
         def create_sales_invoice(self, invoice):
             self.format_sales_reciept(invoice)
             
-        def create_kitchen_invoice(self, invoice):
-            self.format_kitchen_reciept(invoice)
 
     def init(self):
         PrintingService.service = PrintingService.Service()

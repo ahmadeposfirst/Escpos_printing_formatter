@@ -17,6 +17,7 @@ class LogLevels(object):
     }
 
 class Logger(LogLevels):
+
     min_log_level = None
     curr_level = None
 
@@ -24,10 +25,35 @@ class Logger(LogLevels):
     def init(cls, min_level='debug'):
         cls.min_log_level = cls.levels[min_level]
         cls.curr_level = None
+        cls.debug(f"Logger inialized with [LogLevel={min_level}]")
 
     @classmethod
-    def log(cls, log_msg, log_level):
-        cls.curr_level = cls.levels[log_level]
+    def debug(cls, msg):
+        cls.curr_level = cls.levels['debug']
+        cls.log(msg)
+
+    @classmethod
+    def info(cls, msg):
+        cls.curr_level = cls.levels['info']
+        cls.log(msg)
+
+    @classmethod
+    def warning(cls, msg):
+        cls.curr_level = cls.levels['warning']
+        cls.log(msg)
+
+    @classmethod
+    def error(cls, msg):
+        cls.curr_level = cls.levels['error']
+        cls.log(msg)
+
+    @classmethod
+    def critical(cls, msg):
+        cls.curr_level = cls.levels['critical']
+        cls.log(msg)
+
+    @classmethod
+    def log(cls, log_msg):
         if cls._is_level_allowed():
             cls._write_to_log(msg=log_msg)
 
@@ -43,17 +69,23 @@ class Logger(LogLevels):
         if not os.path.exists('logs'):
             os.mkdir('logs')
 
-        # append log to app.log 
-        with open(os.path.join('logs', 'app.log'), 'a') as fp:
+        # new log file is created for every date
+        logfile = f"{cls._log_date()}-logs.log" 
+        
+        # append log to logfile
+        with open(os.path.join('logs', logfile), 'a') as fp:
             fp.write(f'{msg}\n')
 
- 
     @classmethod
     def _is_level_allowed(cls):
         if cls.curr_level.value >= cls.min_log_level.value:
             return True
         cls.curr_level = None
         return False
+
+    @classmethod
+    def _log_date(cls):
+        return datetime.now().strftime('%d-%b-%Y')
 
     @classmethod
     def _date(cls):
